@@ -1,0 +1,9 @@
+{
+  "name": "Ruiskutuskeli",
+  "short_name": "Ruiskutuskeli",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eef3ee",
+  "theme_color": "#2f6f3e",
+  "description": "72 tunnin ruiskutussääennuste karttapisteen mukaan"
+}
