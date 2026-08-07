@@ -1,1 +1,0 @@
-document.getElementById('gear').onclick=()=>document.getElementById('modal').classList.add('show');document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')e.target.classList.remove('show')};const map=L.map('map').setView([63.095,21.616],9);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
