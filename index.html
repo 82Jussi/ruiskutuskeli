@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ruiskutuskeli</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+ily:Arial,sans-serif;
+    background:#f5f5f5;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#2e7d32;
+    color:white;
+    padding:12px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#2e7d32">
+
+<link relpng
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta name="apple-mobile-web-app-title" content="Ruiskutuskeli">
+
+#settingsBtn{
+    cursor:pointer;
+    font-size:24px;
+}
+
+.card{
+    background:white;
+    margin:10px;
+    padding:10px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,.15);
+}
+
+#map{
+    height:300px;
+    border-radius:10px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+th{
+    background:#ddd;
+    position:sticky;
+    top:0;
+}
+
+th,td{
+    padding:6px;
+    text-align:center;
+}
+
+.green{
+    background:#c8f0c8;
+}
+
+.yellow{
+    background:#fff5b1;
+}
+
+.red{
+    background:#ffc8c8;
+}
+
+.summary{
+    display:flex;
+    justify-content:space-around;
+    font-size:18px;
+    font-weight:bold;
+}
+
+dialog{
+    width:90%;
+    max-width:400px;
+}
+
+.setting{
+    margin:8px 0;
+}
+
+.setting label{
+    display:block;
+}
+
+input[type=number]{
+    width:100%;
+    padding:6px;
+}
+
+button{
+    padding:8px 12px;
+    margin-top:10px;
+}
+
+#bestWindow{
+    font-size:18px;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<header>
+    Ruiskutuskeli
+    <span id="settingsBtn">⚙️</span>
+</header>
+
+<div class="card">
+    <div id="bestWindow">Haetaan...</div>
+</div>
+
+<div class="card">
+    <div id="map"></div>
+</div>
+
+<div class="card">
+    <div class="summary">
+        <div>🟢 <span id="greenCount">0</span> h</div>
+        <div>🟡 <span id="yellowCount">0</span> h</div>
+        <div>🔴 <span id="redCount">0</span> h</div>
+    </div>
+</div>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Aika</th>
+<th>Tuuli</th>
+<th>Sade %</th>
+<th>mm/h</th>
+<th>Kosteus</th>
+</tr>
+</thead>
+<tbody id="forecastBody"></tbody>
+</table>
+</div>
+
+<dialog id="settingsDialog">
+
+<h2>Asetukset</h2>
+
+<h3>Tuuli</h3>
+
+<div class="setting">
+<label>Vihreä max (m/s)</label>
+<input id="windGreen" type="number" step="0.1">
+</div>
+
+<div class="setting">
+<label>Keltainen max (m/s)</label>
+<input id="windYellow" type="number" step="0.1">
+</div>
+
+<h3>Sadetodennäköisyys</h3>
+
+<div class="setting">
+<label>Vihreä max (%)</label>
+<input id="rainGreen" type="number">
+</div>
+
+<div class="setting">
+<label>Keltainen max (%)</label>
+<input id="rainYellow" type="number">
+</div>
+
+<h3>Kosteus</h3>
+
+<div class="setting">
+<label>Keltainen min (%)</label>
+<input id="humYellowMin" type="number">
+</div>
+
+<div class="setting">
+<label>Vihreä min (%)</label>
+<input id="humGreenMin" type="number">
+</div>
+
+<div class="setting">
+<label>Vihreä max (%)</label>
+<input id="humGreenMax" type="number">
+</div>
+
+<button onclick="saveSettings()">Tallenna</button>
+<button onclick="settingsDialog.close()">Sulje</button>
+
+</dialog>
+
+https://unpkg.com/leaflet@1.9.4/dist/leaflet.jsscript>
+
+<script>
+
+const defaultSettings={
+    windGreen:4,
+    windYellow:7,
+    rainGreen:20,
+    rainYellow:50,
+    humYellowMin:50,
+    humGreenMin:60,
+    humGreenMax:85
+};
+
+let settings=
+JSON.parse(localStorage.getItem("ruiskutusSettings"))
+|| defaultSettings;
+
+let map;
+let marker;
+
+loadSettingsToForm();
+
+function loadSettingsToForm(){
+
+    windGreen.value=settings.windGreen;
+    windYellow.value=settings.windYellow;
+
+    rainGreen.value=settings.rainGreen;
+    rainYellow.value=settings.rainYellow;
+
+    humYellowMin.value=settings.humYellowMin;
+    humGreenMin.value=settings.humGreenMin;
+    humGreenMax.value=settings.humGreenMax;
+}
+
+function saveSettings(){
+
+    settings={
+        windGreen:Number(windGreen.value),
+        windYellow:Number(windYellow.value),
+
+        rainGreen:Number(rainGreen.value),
+        rainYellow:Number(rainYellow.value),
+
+        humYellowMin:Number(humYellowMin.value),
+        humGreenMin:Number(humGreenMin.value),
+        humGreenMax:Number(humGreenMax.value)
+    };
+
+    localStorage.setItem(
+        "ruiskutusSettings",
+        JSON.stringify(settings)
+    );
+
+    settingsDialog.close();
+
+    if(marker){
+        let p=marker.getLatLng();
+        loadForecast(p.lat,p.lng);
+    }
+}
+
+settingsBtn.onclick=()=>{
+    loadSettingsToForm();
+    settingsDialog.showModal();
+};
+
+function initMap(lat,lon){
+
+    map=L.map('map').setView([lat,lon],10);
+
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            attribution:'© OpenStreetMap'
+        }
+    ).addTo(map);
+
+    marker=L.marker([lat,lon]).addTo(map);
+
+    map.on('click',e=>{
+        marker.setLatLng(e.latlng);
+        loadForecast(
+            e.latlng.lat,
+            e.latlng.lng
+        );
+    });
+
+    loadForecast(lat,lon);
+}
+
+function humidityState(h){
+
+    if(h < settings.humYellowMin)
+        return "red";
+
+    if(h < settings.humGreenMin)
+        return "yellow";
+
+    if(h <= settings.humGreenMax)
+        return "green";
+
+    return "red";
+}
+
+function windState(v){
+
+    if(v <= settings.windGreen)
+        return "green";
+
+    if(v <= settings.windYellow)
+        return "yellow";
+
+    return "red";
+}
+
+function rainState(v){
+
+    if(v <= settings.rainGreen)
+        return "green";
+
+    if(v <= settings.rainYellow)
+        return "yellow";
+
+    return "red";
+}
+
+function overallColor(w,r,h){
+
+    if(w==="red" || r==="red" || h==="red")
+        return "red";
+
+    if(w==="green"
+       && r==="green"
+       && h==="green")
+        return "green";
+
+    return "yellow";
+}
+
+async function loadForecast(lat,lon){
+
+    const url=
+`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=wind_speed_10m,precipitation_probability,precipitation,relative_humidity_2m&forecast_days=3`;
+
+    const res=await fetch(url);
+    const data=await res.json();
+
+    const body=document.getElementById("forecastBody");
+    body.innerHTML="";
+
+    let green=0;
+    let yellow=0;
+    let red=0;
+
+    let bestStart=null;
+    let bestEnd=null;
+    let currentStart=null;
+
+    let longest=0;
+
+    for(let i=0;i<data.hourly.time.length;i++){
+
+        let time=new Date(
+            data.hourly.time[i]
+        );
+
+        let wind=
+        data.hourly.wind_speed_10m[i];
+
+        let rainProb=
+        data.hourly.precipitation_probability[i];
+
+        let rain=
+        data.hourly.precipitation[i];
+
+        let hum=
+        data.hourly.relative_humidity_2m[i];
+
+        let state=
+        overallColor(
+            windState(wind),
+            rainState(rainProb),
+            humidityState(hum)
+        );
+
+        if(state==="green") green++;
+        if(state==="yellow") yellow++;
+        if(state==="red") red++;
+
+        if(state==="green"){
+
+            if(currentStart===null)
+                currentStart=i;
+
+        }else{
+
+            if(currentStart!==null){
+
+                let len=i-currentStart;
+
+                if(len>longest){
+
+                    longest=len;
+                    bestStart=currentStart;
+                    bestEnd=i-1;
+                }
+
+                currentStart=null;
+            }
+        }
+
+        const tr=document.createElement("tr");
+        tr.className=state;
+
+        tr.innerHTML=`
+        <td>${time.toLocaleString("fi-FI")}</td>
+        <td>${wind}</td>
+        <td>${rainProb}</td>
+        <td>${rain}</td>
+        <td>${hum}</td>
+        `;
+
+        body.appendChild(tr);
+    }
+
+    if(currentStart!==null){
+
+        let len=
+        data.hourly.time.length-currentStart;
+
+        if(len>longest){
+
+            longest=len;
+            bestStart=currentStart;
+            bestEnd=data.hourly.time.length-1;
+        }
+    }
+
+    greenCount.textContent=green;
+    yellowCount.textContent=yellow;
+    redCount.textContent=red;
+
+    if(bestStart!==null){
+
+        let s=new Date(
+            data.hourly.time[bestStart]
+        );
+
+        let e=new Date(
+            data.hourly.time[bestEnd]
+        );
+
+        bestWindow.innerHTML=
+        `Paras ruiskutusikkuna:<br>
+        ${s.toLocaleString("fi-FI")} -
+        ${e.toLocaleString("fi-FI")}
+        (${longest} h)`;
+
+    }else{
+
+        bestWindow.textContent=
+        "Ei optimaalista ruiskutusikkunaa";
+    }
+}
+
+if(navigator.geolocation){
+
+    navigator.geolocation.getCurrentPosition(
+
+        pos=>{
+
+            initMap(
+                pos.coords.latitude,
+                pos.coords.longitude
+            );
+
+        },
+
+        ()=>{
+
+            initMap(
+                62.89,
+                27.88
+            );
+        }
+    );
+
+}else{
+
+    initMap(
+        62.89,
+        27.88
+    );
+}
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+window.addEventListener('load', () => {
+navigator.serviceWorker.register('./service-worker.js');
+});
+}
+</script>
+
+</body>
+</html>
