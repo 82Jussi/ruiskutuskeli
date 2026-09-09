@@ -59,8 +59,7 @@ input{width:100%;padding:6px;box-sizing:border-box}
     <thead>
       <tr>
         <th>Aika</th>
-        <th>Tuuli 10m (m/s)</th>
-        <th>Puuskat 10m (m/s)</th>
+        <th>Tuuli (m/s)</th>
         <th>Sade (mm/h)</th>
         <th>Kosteus (%)</th>
       </tr>
@@ -78,14 +77,6 @@ input{width:100%;padding:6px;box-sizing:border-box}
 
   <label>Tuuli keltainen max
     <input id="windYellow" type="number" step="0.1">
-  </label>
-
-  <label>Puuska vihreä max
-    <input id="gustGreen" type="number" step="0.1">
-  </label>
-
-  <label>Puuska keltainen max
-    <input id="gustYellow" type="number" step="0.1">
   </label>
 
   <label>Sade vihreä max (mm/h)
@@ -119,10 +110,8 @@ input{width:100%;padding:6px;box-sizing:border-box}
 const DEF = {
   windGreen:4,
   windYellow:7,
-  gustGreen:6,
-  gustYellow:9,
   rainGreen:0,
-  rainYellow:0.3,
+  rainYellow:0.5,
   humYellowMin:50,
   humGreenMin:60,
   humGreenMax:85
@@ -172,14 +161,6 @@ function wind(v){
     : 'red';
 }
 
-function gust(v){
-  return v<=settings.gustGreen
-    ? 'green'
-    : v<=settings.gustYellow
-    ? 'yellow'
-    : 'red';
-}
-
 function rain(v){
   return v<=settings.rainGreen
     ? 'green'
@@ -196,14 +177,13 @@ function hum(v){
 }
 
 function overall(a,b,c,d){
-  if(a==='red'||b==='red'||c==='red'||d==='red')
+  if(a==='red'||b==='red'||c==='red')
     return 'red';
 
   if(
     a==='green' &&
     b==='green' &&
-    c==='green' &&
-    d==='green'
+    c==='green'
   )
     return 'green';
 
@@ -226,7 +206,7 @@ async function loadForecast(lat,lon){
       "&request=getFeature" +
       "&storedquery_id=fmi::forecast::harmonie::surface::point::multipointcoverage" +
       "&latlon=" + lat + "," + lon +
-      "&parameters=windspeedms,windgust,humidity,precipitation1h" +
+      "&parameters=windspeedms,humidity,precipitation1h" +
       "&starttime=" + now.toISOString() +
       "&endtime=" + end.toISOString();
 
@@ -284,9 +264,6 @@ async function loadForecast(lat,lon){
       const windVal =
         values.windspeedms?.[i] ?? 0;
 
-      const gustVal =
-        values.windgust?.[i] ?? 0;
-
       const rainVal =
         values.precipitation1h?.[i] ?? 0;
 
@@ -295,7 +272,6 @@ async function loadForecast(lat,lon){
 
       const st = overall(
         wind(windVal),
-        gust(gustVal),
         rain(rainVal),
         hum(humVal)
       );
@@ -329,7 +305,6 @@ async function loadForecast(lat,lon){
           minute:'2-digit'
         })}</td>
         <td>${windVal.toFixed(1)}</td>
-        <td>${gustVal.toFixed(1)}</td>
         <td>${rainVal.toFixed(1)}</td>
         <td>${humVal.toFixed(0)}</td>`;
 
