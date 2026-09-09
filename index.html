@@ -267,10 +267,19 @@ async function loadForecast(lat,lon){
     let be=null;
     let cs=null;
     let longest=0;
+	
+	const currentTime = new Date();
+	currentTime.setMinutes(0,0,0);
+	currentTime.setHours(currentTime.getHours() + 1);
 
     for(let i=0;i<times.length;i++){
 
       const rowTime = new Date(times[i]);
+	  
+	  // Ohitetaan menneet ennusteet
+		if(rowTime < currentTime){
+			continue;
+		}
 
       const windVal =
         values.windspeedms?.[i] ?? 0;
