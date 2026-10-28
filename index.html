@@ -8,7 +8,9 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2e7d32">
 
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Ruiskutuskeli">
@@ -27,9 +29,16 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:6px;text-align:center;border-bottom:1px solid #ddd}
 th{position:sticky;top:0;background:#ddd}
 .summary{display:flex;justify-content:space-around;font-weight:bold}
-dialog{width:min(95vw,420px)}
-label{display:block;margin-top:8px}
-input{width:100%;padding:6px;box-sizing:border-box}
+dialog{box-sizing:border-box;width:min(92vw,420px);max-width:92vw;max-height:85vh;overflow-y:auto;padding:14px;border:none;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog h2{margin:0 0 6px;font-size:20px}
+label{display:block;margin-top:8px;font-size:14px}
+/* 16px estää iPhonen automaattisen zoomauksen kenttää napautettaessa */
+input{width:100%;padding:6px;box-sizing:border-box;font-size:16px}
+dialog button{margin-top:12px;padding:8px 16px;font-size:16px}
+html,body{overflow-x:hidden}
+footer{margin:16px 10px 12px;padding-top:8px;border-top:1px solid #ddd;font-size:11px;color:#777;text-align:center}
+footer a{color:#777}
 </style>
 
 </head>
@@ -69,6 +78,11 @@ input{width:100%;padding:6px;box-sizing:border-box}
   </table>
 </div>
 
+<footer>
+  Säädata: <a href="https://www.ilmatieteenlaitos.fi/avoin-data" target="_blank" rel="noopener">Ilmatieteen laitos</a> (avoin data, CC BY 4.0) ·
+  Kartta: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-tekijät
+</footer>
+
 <dialog id="settingsDialog">
   <h2>Asetukset</h2>
 
@@ -100,8 +114,8 @@ input{width:100%;padding:6px;box-sizing:border-box}
     <input id="humGreenMax" type="number">
   </label>
 
-  <button onclick="saveSettings()">Tallenna</button>
-  <button onclick="settingsDialog.close()">Sulje</button>
+  <button type="button" onclick="saveSettings()">Tallenna</button>
+  <button type="button" onclick="settingsDialog.close()">Sulje</button>
 </dialog>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
