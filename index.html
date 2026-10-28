@@ -114,6 +114,10 @@ footer a{color:#777}
     <input id="humGreenMax" type="number">
   </label>
 
+  <label>Kosteus keltainen max
+    <input id="humYellowMax" type="number">
+  </label>
+
   <button type="button" onclick="saveSettings()">Tallenna</button>
   <button type="button" onclick="settingsDialog.close()">Sulje</button>
 </dialog>
@@ -129,7 +133,8 @@ const DEF = {
   rainYellow:0.5,
   humYellowMin:50,
   humGreenMin:60,
-  humGreenMax:85
+  humGreenMax:85,
+  humYellowMax:90
 };
 
 let settings = {...DEF,
@@ -146,7 +151,9 @@ function fillForm(){
 
 function saveSettings(){
   for(const k in settings){
-    const v=parseFloat(document.getElementById(k).value);
+    const el=document.getElementById(k);
+    if(!el) continue;
+    const v=parseFloat(el.value);
     if(Number.isFinite(v)) settings[k]=v;
   }
 
@@ -188,6 +195,7 @@ function hum(v){
   if(v<settings.humYellowMin) return 'red';
   if(v<settings.humGreenMin) return 'yellow';
   if(v<=settings.humGreenMax) return 'green';
+  if(v<=settings.humYellowMax) return 'yellow';
   return 'red';
 }
 
